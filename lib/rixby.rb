@@ -69,7 +69,8 @@ def export(item)
   case item
   when Symbol
     key = item
-    value = singleton_method(item)
+    # Try both - sometimes one works, sometimes the other, I'm not sure why.
+    value = method(item) rescue singleton_method(item)
   when Module
     key = item.name.split('::').last.to_sym
     value = item
