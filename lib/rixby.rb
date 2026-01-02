@@ -1,4 +1,4 @@
-require_relative 'import_dsl'
+require_relative 'rixby/import_dsl'
 
 # Store boxes for imported files as an instance variable on the main box.
 # Unlike a constant, this means all boxes are accessing the same value.
@@ -12,7 +12,7 @@ def import(&blk)
   end
   block_binding = blk.binding
 
-  import_desc = ImportDsl.evaluate(&blk)
+  import_desc = Rixby::ImportDsl.evaluate(&blk)
   filename = import_desc.filename
 
   relative_to = File.dirname(block_binding.source_location[0])
