@@ -1,5 +1,11 @@
 require_relative 'import_dsl'
 
+# Store boxes for imported files as an instance variable on the main box.
+# Unlike a constant, this means all boxes are accessing the same value.
+if Ruby::Box.current == Ruby::Box.main
+  Ruby::Box.main.instance_variable_set(:@__rixby_boxes, {})
+end
+
 def import(&blk)
   unless block_given?
     raise 'you must pass a block to `import` describing the items to import'
@@ -8,12 +14,17 @@ def import(&blk)
   import_desc = ImportDsl.evaluate(&blk)
   filename = import_desc.filename
 
-  # TODO: Need to keep boxes coherent between imports somehow. Very unfinished
-  # (i.e. so you don't end up re-defining classes)
-  # Need some global caching like `require` does
-  box = Ruby::Box.new
-  box.require(__FILE__)
-  box.require(filename)
+  # TODO: file paths should be relative to importer. currently relative to CWD
+  absolute_filename = File.expand_path(filename)
+  imported_boxes = Ruby::Box.main.instance_variable_get(:@__rixby_boxes)
+  if imported_boxes.has_key?(absolute_filename)
+    box = imported_boxes[absolute_filename]
+  else
+    box = Ruby::Box.new
+    box.require(__FILE__)
+    box.require(absolute_filename)
+    imported_boxes[absolute_filename] = box
+  end
 
   exports = box.instance_variable_get(:@__rixby_exports)
   case import_desc.imports
@@ -25,7 +36,7 @@ def import(&blk)
     raise 'internal error: malformed import array'
   end
 
-  # TODO: This works for methods, probably not for constants etc
+  # TODO: This works for methods and classes, probably not for constants etc
   block_binding = blk.binding
   imports.each do |import|
     export = exports[import] or raise(KeyError, "no export named `#{import}`")
