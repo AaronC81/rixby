@@ -121,7 +121,7 @@ import 'file', :A, :B
 This is a sly trick to give `import` a `Binding` for the parent scope.
 
 Blocks come along with a `Binding` for the callee scope.
-By accessing this, Rixby to define the imported methods or constants within that parent scope.
+By accessing this, Rixby can define the imported methods or constants within that parent scope.
 
 The alternative would be to require `binding` to be passed explicitly to each `import` call, but that would be much uglier.
 
