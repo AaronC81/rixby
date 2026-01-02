@@ -8,9 +8,19 @@ module ImportDsl
 
     attr_reader :filename, :imports
 
-    def from(**kw)
-      raise ArgumentError unless kw.length == 1
-      @filename, @imports = kw.to_a.first
+    def from(filename, *imports)
+      @filename = filename
+      @imports = imports
+
+      if @imports.empty?
+        raise ArgumentError, 'import list cannot be empty. if you want to import everything, use `all` instead'
+      end
+
+      @imports.each do |import|
+        unless import.is_a?(Symbol)
+          raise TypeError, "imported names must be symbols, but got: #{import}"
+        end
+      end
     end
     
     def all(filename)
