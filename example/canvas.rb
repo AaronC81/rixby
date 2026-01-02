@@ -1,4 +1,4 @@
-import { from './shapes.rb', :Circle, :Rectangle }
+import { from 'shapes', :Circle, :Rectangle }
 
 class Canvas export
   def initialize

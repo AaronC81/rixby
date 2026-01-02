@@ -17,6 +17,12 @@ def import(&blk)
 
   relative_to = File.dirname(block_binding.source_location[0])
   absolute_filename = File.expand_path(filename, relative_to)
+
+  # Add `.rb` automatically if that would create a valid path
+  if !File.exist?(absolute_filename) && File.exist?(absolute_filename + '.rb')
+    absolute_filename += '.rb'
+  end
+
   imported_boxes = Ruby::Box.main.instance_variable_get(:@__rixby_boxes)
   if imported_boxes.has_key?(absolute_filename)
     box = imported_boxes[absolute_filename]

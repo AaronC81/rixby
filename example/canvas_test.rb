@@ -1,6 +1,6 @@
-import { from './canvas.rb', :Canvas }
-import { from './shapes.rb', :Rectangle, :Circle }
-import { from './assertion.rb', :assert_equal }
+import { from 'canvas', :Canvas }
+import { from 'shapes', :Rectangle, :Circle }
+import { from 'assertion', :assert_equal }
 
 export def canvas_demo
   canvas = Canvas.new
