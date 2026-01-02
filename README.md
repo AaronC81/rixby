@@ -42,6 +42,8 @@ p unit_square
 
 </tr>
 
+</table>
+
 > [!TIP]
 > For a more complete example, see the `example` directory.
 > Start from `canvas.rb`.
