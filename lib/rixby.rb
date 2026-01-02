@@ -6,10 +6,29 @@ if Ruby::Box.current == Ruby::Box.main
   Ruby::Box.main.instance_variable_set(:@__rixby_boxes, {})
 end
 
+# Import items from a file.
+#
+# Requires a block in one of the following two forms:
+#
+#   1. Import particular items from the file (which must be `export`-ed):
+#      ```
+#      import { from 'file', :a, :b, :c }
+#      ```
+#
+#   2. Import everything which was `export`-ed from the file:
+#      ```
+#      import { all: 'file' }
+#      ```
+#
+# Imports are only visible to the current file.
+# Files which import this file will not see the same imports.
+#
 def import(&blk)
   unless block_given?
     raise 'you must pass a block to `import` describing the items to import'
   end
+
+  # The syntax uses a block specifically so that we can pinch the binding, and define new things in it
   block_binding = blk.binding
 
   import_desc = Rixby::ImportDsl.evaluate(&blk)
@@ -23,13 +42,16 @@ def import(&blk)
     absolute_filename += '.rb'
   end
 
+  # Only import each file into a box once.
+  # Otherwise we'll end up with a new definition of each class every time we import something, and
+  # they won't compare equally.
   imported_boxes = Ruby::Box.main.instance_variable_get(:@__rixby_boxes)
   if imported_boxes.has_key?(absolute_filename)
     box = imported_boxes[absolute_filename]
   else
     box = Ruby::Box.new
     box.instance_variable_set(:@__rixby_imported, true)
-    box.require(__FILE__)
+    box.require(__FILE__) # Enable `import`/`export` in that file too
     box.require(absolute_filename)
     imported_boxes[absolute_filename] = box
   end
@@ -44,6 +66,7 @@ def import(&blk)
     raise 'internal error: malformed import array'
   end
 
+  # Copy imports into the current scope.
   imports.each do |import|
     export = exports[import] or raise(KeyError, "no export named `#{import}`")
 
@@ -58,6 +81,20 @@ def import(&blk)
   end
 end
 
+# Export an item from this file, so it's visible to `import`.
+#
+# Call either on a method definition, or from within a class/module:
+#
+# ```
+# export def something
+#   # ...
+# end
+#
+# class Foobar export
+#   # ...
+# end
+# ```
+#
 def export(item)
   # If this file isn't being imported, we can ignore `export`.
   # This is relevant if you `export` from the main file, where `singleton_method` doesn't seem to be
@@ -86,8 +123,9 @@ def export(item)
   exports = box.instance_variable_get(:@__rixby_exports)
   exports[key] = value
 end
-EXPORT_METHOD = method(:export)
 
+# Enables `export` to be called from within a class or module to export that item
+EXPORT_METHOD = method(:export)
 Module.define_method(:export) do
   EXPORT_METHOD.(self)
 end
