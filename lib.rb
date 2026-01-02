@@ -44,7 +44,7 @@ def import(&blk)
     case export
     when Method
       block_binding.receiver.define_singleton_method(import, &export)
-    when Class
+    when Module
       block_binding.receiver.class.const_set(import, export)
     else
       raise "internal error: unsupported export type #{export}"
@@ -64,7 +64,7 @@ def export(item)
   when Symbol
     key = item
     value = singleton_method(item)
-  when Class
+  when Module
     key = item.name.split('::').last.to_sym
     value = item
   else
