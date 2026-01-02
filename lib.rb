@@ -37,7 +37,6 @@ def import(&blk)
     raise 'internal error: malformed import array'
   end
 
-  # TODO: This works for methods and classes, probably not for constants etc
   block_binding = blk.binding
   imports.each do |import|
     export = exports[import] or raise(KeyError, "no export named `#{import}`")
