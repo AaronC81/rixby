@@ -1,13 +1,12 @@
-def import(**kw, &blk)
-  raise unless kw.length == 1
+require_relative 'import_dsl'
 
-  # The block is never executed, only used to get a binding for the caller.
-  # TODO: see if we can use the block as part of a DSL
+def import(&blk)
   unless block_given?
-    raise 'you must pass an empty block to `import` for implementation reasons'
+    raise 'you must pass a block to `import` describing the items to import'
   end
 
-  filename, imports = kw.to_a.first
+  import_desc = ImportDsl.evaluate(&blk)
+  filename = import_desc.filename
 
   # TODO: Need to keep boxes coherent between imports somehow. Very unfinished
   # (i.e. so you don't end up re-defining classes)
@@ -16,6 +15,14 @@ def import(**kw, &blk)
   box.require(filename)
 
   exports = box.instance_variable_get(:@__rixby_exports)
+  case import_desc.imports
+  when :all
+    imports = exports.keys
+  when Array
+    imports = import_desc.imports
+  else
+    raise 'internal error: malformed import array'
+  end
 
   # TODO: This works for methods, probably not for constants etc
   block_binding = blk.binding

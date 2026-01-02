@@ -1,5 +1,6 @@
 require_relative './lib'
-import './tools' => [:foo, :bar] do end
+# import { all './tools' }
+import { from './tools' => [:foo, :bar] }
 
 # This should also work
 #   Tools = import './tools'
