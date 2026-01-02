@@ -10,12 +10,13 @@ def import(&blk)
   unless block_given?
     raise 'you must pass a block to `import` describing the items to import'
   end
+  block_binding = blk.binding
 
   import_desc = ImportDsl.evaluate(&blk)
   filename = import_desc.filename
 
-  # TODO: file paths should be relative to importer. currently relative to CWD
-  absolute_filename = File.expand_path(filename)
+  relative_to = File.dirname(block_binding.source_location[0])
+  absolute_filename = File.expand_path(filename, relative_to)
   imported_boxes = Ruby::Box.main.instance_variable_get(:@__rixby_boxes)
   if imported_boxes.has_key?(absolute_filename)
     box = imported_boxes[absolute_filename]
@@ -37,7 +38,6 @@ def import(&blk)
     raise 'internal error: malformed import array'
   end
 
-  block_binding = blk.binding
   imports.each do |import|
     export = exports[import] or raise(KeyError, "no export named `#{import}`")
 
