@@ -12,3 +12,10 @@ end
 def baz
   3
 end
+
+class Person export
+  def initialize(name)
+    @name = name
+  end
+  def greet = "Hello, my name is #@name"
+end

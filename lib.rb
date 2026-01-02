@@ -28,7 +28,15 @@ def import(&blk)
   block_binding = blk.binding
   imports.each do |import|
     export = exports[import] or raise(KeyError, "no export named `#{import}`")
-    block_binding.receiver.define_singleton_method(import, &export)
+
+    case export
+    when Method
+      block_binding.receiver.define_singleton_method(import, &export)
+    when Class
+      block_binding.receiver.class.const_set(import, export)
+    else
+      raise "internal error: unsupported export type #{export}"
+    end
   end
 end
 
@@ -37,6 +45,9 @@ def export(item)
   when Symbol
     key = item
     value = singleton_method(item)
+  when Class
+    key = item.name.split('::').last.to_sym
+    value = item
   else
     raise ArgumentError, "unsupported item for export: #{item}"
   end
@@ -48,4 +59,9 @@ def export(item)
 
   exports = box.instance_variable_get(:@__rixby_exports)
   exports[key] = value
+end
+EXPORT_METHOD = method(:export)
+
+Module.define_method(:export) do
+  EXPORT_METHOD.(self)
 end
