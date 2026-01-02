@@ -12,6 +12,7 @@ def import(&blk)
   # (i.e. so you don't end up re-defining classes)
   # Need some global caching like `require` does
   box = Ruby::Box.new
+  box.require(__FILE__)
   box.require(filename)
 
   exports = box.instance_variable_get(:@__rixby_exports)
