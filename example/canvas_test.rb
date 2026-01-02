@@ -2,7 +2,7 @@ import { from './canvas.rb', :Canvas }
 import { from './shapes.rb', :Rectangle, :Circle }
 import { from './assertion.rb', :assert_equal }
 
-def canvas_demo
+export def canvas_demo
   canvas = Canvas.new
   canvas.add_circle(2)
   canvas.add_rectangle(4, 5)

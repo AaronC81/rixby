@@ -21,6 +21,7 @@ def import(&blk)
     box = imported_boxes[absolute_filename]
   else
     box = Ruby::Box.new
+    box.instance_variable_set(:@__rixby_imported, true)
     box.require(__FILE__)
     box.require(absolute_filename)
     imported_boxes[absolute_filename] = box
@@ -53,6 +54,13 @@ def import(&blk)
 end
 
 def export(item)
+  # If this file isn't being imported, we can ignore `export`.
+  # This is relevant if you `export` from the main file, where `singleton_method` doesn't seem to be
+  # able to look up methods correctly.
+  unless Ruby::Box.current.instance_variable_get(:@__rixby_imported)
+    return
+  end
+
   case item
   when Symbol
     key = item
